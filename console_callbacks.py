@@ -119,7 +119,9 @@ volume_range = (mixer.getrange()[1]-mixer.getrange()[0]) / 100
 selected_volume_range = int(args.dbrange)
 if selected_volume_range > volume_range or selected_volume_range == 0:
     selected_volume_range = volume_range
-min_volume_range = (1 - selected_volume_range / volume_range) * 100
+min_volume_range = 0
+if volume_range > 0:
+    min_volume_range = (1 - selected_volume_range / volume_range) * 100
 print "min_volume_range: {}".format(min_volume_range)
 
 def userdata_wrapper(f):
