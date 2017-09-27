@@ -7,6 +7,7 @@ from threading import Thread
 import threading
 from connect_ffi import ffi, lib
 from lastfm import lastfm
+from subprocess import call
 
 
 RATE = 44100
@@ -21,6 +22,8 @@ playback_device_group = audio_arg_parser.add_mutually_exclusive_group()
 playback_device_group.add_argument('--device', '-D', help='alsa output device (deprecated, use --playback_device)', default='default')
 playback_device_group.add_argument('--playback_device', '-o', help='alsa output device (get name from aplay -L)', default='default')
 
+audio_arg_parser.add_argument('--on_connect_run', help='Run command when client connects')
+audio_arg_parser.add_argument('--on_play_run', help='Run command when client start playing music')
 audio_arg_parser.add_argument('--mixer_device_index', help='alsa card index of the mixer device', type=int)
 audio_arg_parser.add_argument('--mixer', '-m', help='alsa mixer name for volume control', default=alsa.mixers()[0])
 audio_arg_parser.add_argument('--dbrange', '-r', help='alsa mixer volume range in Db', default=0)
@@ -165,6 +168,8 @@ def debug_message(self, msg):
 def playback_notify(self, type):
     if type == lib.kSpPlaybackNotifyPlay:
         print "kSpPlaybackNotifyPlay"
+        if args.on_play_run:
+            call(args.on_play_run, shell=True)
         device.acquire()
         lastfm.play()
     elif type == lib.kSpPlaybackNotifyPause:
@@ -188,6 +193,8 @@ def playback_notify(self, type):
         print "kSpPlaybackNotifyRepeatDisabled"
     elif type == lib.kSpPlaybackNotifyBecameActive:
         print "kSpPlaybackNotifyBecameActive"
+        if args.on_connect_run:
+            call(args.on_connect_run, shell=True)
         session.activate()
     elif type == lib.kSpPlaybackNotifyBecameInactive:
         print "kSpPlaybackNotifyBecameInactive"
